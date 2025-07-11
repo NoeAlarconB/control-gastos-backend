@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model usuarios {
+  id_usuario          Int                 @id @default(autoincrement())
+  username            String              @db.VarChar(100)
+  email               String              @unique @db.VarChar(100)
+  contrasenia         String
+  estado_auditoria    String?             @default("1") @db.Char(1)
+  fecha_creacion      DateTime?           @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?           @db.Timestamp(6)
+  categorias          categorias[]
+  cuentas_bancarias   cuentas_bancarias[]
+  presupuestos        presupuestos[]
+  transacciones       transacciones[]
+  metodos_pago        metodos_pago[]
+}
+
+model categorias {
+  id_categoria        Int             @id @default(autoincrement())
+  id_usuario          Int
+  nombre              String          @db.VarChar(100)
+  tipo                String          @db.VarChar(50)
+  estado_auditoria    String?         @default("1") @db.Char(1)
+  fecha_creacion      DateTime?       @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?       @db.Timestamp(6)
+  usuarios            usuarios        @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  presupuestos        presupuestos[]
+  transacciones       transacciones[]
+}
+
+model metodos_pago {
+  id_metodo_pago      Int             @id @default(autoincrement())
+  id_usuario          Int
+  nombre              String          @db.VarChar(100)
+  estado_auditoria    String?         @default("1") @db.Char(1)
+  fecha_creacion      DateTime?       @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?       @db.Timestamp(6)
+  usuarios            usuarios        @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  transacciones       transacciones[]
+}
+
+model cuentas_bancarias {
+  id_cuenta           Int             @id @default(autoincrement())
+  id_usuario          Int
+  nombre              String          @db.VarChar(100)
+  saldo               Decimal         @default(0.00) @db.Decimal(10, 2)
+  estado_auditoria    String?         @default("1") @db.Char(1)
+  fecha_creacion      DateTime?       @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?       @db.Timestamp(6)
+  usuario             usuarios        @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  transacciones       transacciones[]
+}
+
+model transacciones {
+  id_transacciones    Int               @id @default(autoincrement())
+  id_usuario          Int
+  id_categoria        Int
+  id_metodo_pago      Int
+  id_cuenta           Int
+  monto               Decimal           @db.Decimal(10, 2)
+  tipo                String            @db.VarChar(50)
+  descripcion         String?           @db.VarChar(100)
+  estado_auditoria    String?           @default("1") @db.Char(1)
+  fecha_creacion      DateTime?         @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?         @db.Timestamp(6)
+  categoria           categorias        @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction)
+  cuenta              cuentas_bancarias @relation(fields: [id_cuenta], references: [id_cuenta], onDelete: NoAction, onUpdate: NoAction)
+  metodo_pago         metodos_pago      @relation(fields: [id_metodo_pago], references: [id_metodo_pago], onDelete: NoAction, onUpdate: NoAction)
+  usuario             usuarios          @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model presupuestos {
+  id_presupuesto      Int        @id @default(autoincrement())
+  id_usuario          Int
+  id_categoria        Int
+  monto_maximo        Decimal    @db.Decimal(10, 2)
+  mes                 Int
+  anio                Int
+  estado_auditoria    String?    @default("1") @db.Char(1)
+  fecha_creacion      DateTime?  @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?  @db.Timestamp(6)
+  categoria           categorias @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction)
+  usuario             usuarios   @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@unique([id_usuario, id_categoria, mes, anio])
+}
