@@ -33,6 +33,7 @@ npm i
 ```
 
 3. Configurar variables de entorno
+
 Crear un archivo .env en la carpeta backend basado en el ejemplo .env.example y configurar las variables necesarias, especialmente la conexión a la base de datos.
 
 4. Configurar Prisma y base de datos
